@@ -105,7 +105,8 @@
             (jumplist/drop! jumplist/idx)
             (setq jumplist/jumping nil)
             (jumplist/reset-idx))
-          (jumplist/push pointer)))))
+          (unless (jumplist/same-position? pointer)
+            (jumplist/push pointer))))))
 
 (defun jumplist/do-command? (command do-hook-command-list)
   (if do-hook-command-list
@@ -113,11 +114,15 @@
        (eq command (car do-hook-command-list))
        (jumplist/do-command? command (cdr do-hook-command-list)))))
 
-(defun jumplist/commad-hook ()
+(defun jumplist--commad-hook ()
   "Pre commad hook that call `jumplist/set' when registerd command hook called."
-  (if (jumplist/do-command? this-command jumplist/hook-commad-list)
-      (jumplist/set)))
-(add-hook 'pre-command-hook 'jumplist/commad-hook)
+  (cond
+   ((jumplist/do-command? this-command jumplist/hook-commad-list) (jumplist/set))
+   ((and jumplist/jumping               ; when jump and move
+         (not (eq this-command 'jumplist/previous-jump))
+         (not (eq this-command 'jumplist/forward-jump)))
+    (jumplist/set))))
+(add-hook 'pre-command-hook 'jumplist--commad-hook)
 
 ;;;###autoload
 (defun jumplist/previous-jump ()
