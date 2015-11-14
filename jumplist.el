@@ -58,73 +58,58 @@
   (find-file (car buff))
   (goto-char (cdr buff)))
 
-;; (setq jumplist/list (cdr jumplist/list))
-
-;; (defun jumplist/do-jump-with-idx (buff idx)
-;;   "BUFF and IDX."
-;;   ())
-
-
 (defun jumplist/reset-idx ()
-  (setq jumplist/idx -0))
+  "Reset `jumplist/idx'."
+  (setq jumplist/idx 0))
 
-(defun jumplist/inc-idx ()
-  (when jumplist/jumping
-    (setq jumplist/idx
-          (+ jumplist/idx
-             (if (= 1 jumplist/jumping)         ; previous
-                 1
-               2)))
-    (if (< (- jumplist/max-length 1) jumplist/jumping)
-        (setq jumplist/jumping (- jumplist/max-length 1)))))
+(defun jumplist/last? ()
+  "Check `jumplist/idx' is last of list."
+  (= jumplist/idx (- (length jumplist/list) 1)))
+
+(defun jumplist/first? ()
+  "Check `jumplist/idx' is first of list."
+  (= jumplist/idx 0))
 
 (defun jumplist/dec-idx ()
-  (when jumplist/jumping
-    (setq jumplist/idx
-          (- jumplist/idx
-             (if (= 2 jumplist/jumping)         ; forward
-                 1
-               2)))
-    (if (> 0 jumplist/jumping) (setq jumplist/jumping 0))))
+  "Descrement `jumplist/idx'."
+  (setq jumplist/idx (- jumplist/idx 1)))
 
-(defun jumplist/jump-previous ()
-  "Undo Jump."
+(defun jumplist/inc-idx ()
+  "Increment `jumplist/idx'."
+  (setq jumplist/idx (+ jumplist/idx 1)))
+
+(defun jumplist/prev-jump ()
+  "Jump."
   (interactive)
-  (if (and jumplist/list
-           (< jumplist/idx (length jumplist/list))
-           (< jumplist/idx (- jumplist/max-length 1)))
-      (let ((buff (if jumplist/jumping
-                      (nth jumplist/idx jumplist/list)
-                    (car jumplist/list))))
-        (jumplist/do-jump buff)
-        (jumplist/inc-idx)
-        (setq jumplist/jumping 1)       ; 1 is previous
-        ;; (recenter)
-        )
-    (message "Undo list is empty")))
+  (if (jumplist/last?)
+      (message "last.")
+    (unless jumplist/jumping
+      (jumplist/set)
+      (setq jumplist/jumping 't))
+    (jumplist/inc-idx)
+    (let ((buff (nth jumplist/idx jumplist/list)))
+      (jumplist/do-jump buff))))
 
-(defun jumplist/jump-forward ()
-  "Redo Jump."
+(defun jumplist/next-jump ()
+  "Jump."
   (interactive)
-  (if (and jumplist/list (< 0 jumplist/idx) jumplist/jumping)
-      (let ((buff (nth (if (= (length jumplist/list) jumplist/idx) ;last
+  (if (jumplist/first?)
+      (message "first.")
+    (unless jumplist/jumping
+      (jumplist/set)
+      (setq jumplist/jumping 't))
+    (jumplist/dec-idx)
+    (let ((buff (nth jumplist/idx jumplist/list)))
+      (jumplist/do-jump buff))))
 
-                           jumplist/idx) jumplist/list)))
-        (jumplist/do-jump buff)
-        (jumplist/dec-idx)
-        (setq jumplist/jumping 2)       ; 2 is forward
-        ;; (recenter)
-        ))
-  (message "Redo list is empty"))
+(defun jumplist/drop! (idx)
+  (nbutlast jumplist/list jumplist/idx))
 
 (defun jumplist/push (pointer)
   "Push POINTER to `jumplist'."
   (while (> (length jumplist/list) jumplist/max-length)
     (nbutlast jumplist/list 1))
   (push pointer jumplist/list))
-
-(defun jumplist/drop! (idx)
-  (nbutlast jumplist/list jumplist/idx))
 
 (defun jumplist/set ()
   "The record data structure is (file-name . pointer)."
@@ -138,54 +123,6 @@
 
 (provide 'jumplist)
 ;;; jumplist.el ends here
-
-(defun jumplist/last? ()
-  (= jumplist/idx (- (length jumplist/list) 1)))
-
-(defun jumplist/first? ()
-  (= jumplist/idx 0))
-
-(defun jumplist/dec-idx ()
-  (setq jumplist/idx (- jumplist/idx 1)))
-
-(defun jumplist/inc-idx ()
-  (setq jumplist/idx (+ jumplist/idx 1)))
-
-(defun jumplist/validate-inc-idx ()
-  (when (jumplist/last?) (error "last!")))
-
-(defun jumplist/validate-dec-idx ()
-  (when (jumplist/first?) (error "first!")))
-
-
-(defun jumplist/do-jump (buff)
-  "Do jump to target file and point from BUFF."
-  (find-file (car buff))
-  (goto-char (cdr buff)))
-
-(defun jumplist/prev-jump ()
-  "Jump."
-  (interactive)
-  (progn
-    (jumplist/validate-inc-idx)
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/inc-idx))
-  (let ((buff (nth jumplist/idx jumplist/list)))
-    (jumplist/do-jump buff)))
-
-(defun jumplist/next-jump ()
-  "Jump."
-  (interactive)
-  (progn
-    (jumplist/validate-dec-idx)
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/dec-idx))
-  (let ((buff (nth jumplist/idx jumplist/list)))
-    (jumplist/do-jump buff)))
 
 (global-set-key (kbd "s-j") 'jumplist/set)
 (global-set-key (kbd "s-g") 'jumplist/prev-jump)
