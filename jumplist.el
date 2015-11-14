@@ -39,7 +39,7 @@
   :type 'integer
   :group 'jumplist)
 
-(defcustom jumplist/hook-commad-list '()
+(defcustom jumplist/hook-commad-list '(end-of-buffer beginning-of-buffer find-file)
   "Max length of jumplist."
   :type 'list
   :group 'jumplist)
@@ -88,16 +88,25 @@
     (nbutlast jumplist/list 1))
   (push pointer jumplist/list))
 
+(defun jumplist/same-position? (pointer)
+  (let ((new-point (cdr pointer))
+        (top-point (cdar jumplist/list)))
+    (cond ((not new-point) nil)
+          ((not top-point) nil)
+          ((eq (marker-position new-point) (marker-position top-point)) 't))))
+
 (defun jumplist/set ()
   "The record data structure is (file-name . pointer)."
   (interactive)
   (if (buffer-file-name)
       (let ((pointer (cons (buffer-file-name) (point-marker))))
-        (when jumplist/jumping
-          (jumplist/drop! jumplist/idx)
-          (setq jumplist/jumping nil)
-          (jumplist/reset-idx))
-        (jumplist/push pointer))))
+        (unless (jumplist/same-position? pointer)
+          (message "hogehgoe")
+          (when jumplist/jumping
+            (jumplist/drop! jumplist/idx)
+            (setq jumplist/jumping nil)
+            (jumplist/reset-idx))
+          (jumplist/push pointer)))))
 
 (defun jumplist/do-command? (command blacklist)
   (if blacklist
