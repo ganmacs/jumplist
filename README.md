@@ -25,10 +25,10 @@ After Installation add following to your configuration file(~/.emacs.d/init.el, 
 
 ```lisp
 (require 'jumplist)
-(global-set-key (kbd "C-<") 'jumplist/previous-jump)
-(global-set-key (kbd "C->") 'jumplist/forward-jump)
+(global-set-key (kbd "C-<") 'jumplist--previous-jump)
+(global-set-key (kbd "C->") 'jumplist--forward-jump)
 (custom-set-variables
- '(jumplist/hook-commad-list
+ '(jumplist--hook-commad-list
    '(helm-swoop dired-jump helm-for-files
      isearch-forward end-of-buffer beginning-of-buffer
      find-file)))
