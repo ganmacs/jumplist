@@ -34,124 +34,124 @@
   :prefix "jumplist"
   :group 'jumplist)
 
-(defcustom jumplist/max-length 100
+(defcustom jumplist--max-length 100
   "Max length of jumplist."
   :type 'integer
   :group 'jumplist)
 
-(defcustom jumplist/hook-commad-list '(end-of-buffer beginning-of-buffer find-file)
+(defcustom jumplist--hook-commad-list '(end-of-buffer beginning-of-buffer find-file)
   "Max length of jumplist."
   :type 'list
   :group 'jumplist)
 
-(defvar jumplist/list '()
+(defvar jumplist--list '()
   "Jumplist that save file info.")
 
-(defvar jumplist/idx 0
+(defvar jumplist--idx 0
   "Index of jumplist.")
 
-(defvar jumplist/jumping nil
+(defvar jumplist--jumping nil
   "Jumplist state.")
 
-(defun jumplist/do-jump (buff)
+(defun jumplist--do-jump (buff)
   "Do jump to target file and point from BUFF."
   (find-file (car buff))
   (goto-char (cdr buff)))
 
-(defun jumplist/reset-idx ()
-  "Reset `jumplist/idx'."
-  (setq jumplist/idx 0))
+(defun jumplist--reset-idx ()
+  "Reset `jumplist--idx'."
+  (setq jumplist--idx 0))
 
-(defun jumplist/last? ()
-  "Check `jumplist/idx' is last of list."
-  (= jumplist/idx (- (length jumplist/list) 1)))
+(defun jumplist--last? ()
+  "Check `jumplist--idx' is last of list."
+  (= jumplist--idx (- (length jumplist--list) 1)))
 
-(defun jumplist/first? ()
-  "Check `jumplist/idx' is first of list."
-  (= jumplist/idx 0))
+(defun jumplist--first? ()
+  "Check `jumplist--idx' is first of list."
+  (= jumplist--idx 0))
 
-(defun jumplist/dec-idx ()
-  "Descrement `jumplist/idx'."
-  (setq jumplist/idx (- jumplist/idx 1)))
+(defun jumplist--dec-idx ()
+  "Descrement `jumplist--idx'."
+  (setq jumplist--idx (- jumplist--idx 1)))
 
-(defun jumplist/inc-idx ()
-  "Increment `jumplist/idx'."
-  (setq jumplist/idx (+ jumplist/idx 1)))
+(defun jumplist--inc-idx ()
+  "Increment `jumplist--idx'."
+  (setq jumplist--idx (+ jumplist--idx 1)))
 
-(defun jumplist/drop! (idx)
+(defun jumplist--drop! (idx)
   "Drop item form list of IDX."
-  (setq jumplist/list (nthcdr jumplist/idx jumplist/list)))
+  (setq jumplist--list (nthcdr jumplist--idx jumplist--list)))
 
-(defun jumplist/push (pointer)
+(defun jumplist--push (pointer)
   "Push POINTER to `jumplist'."
-  (while (> (length jumplist/list) jumplist/max-length)
-    (nbutlast jumplist/list 1))
-  (push pointer jumplist/list))
+  (while (> (length jumplist--list) jumplist--max-length)
+    (nbutlast jumplist--list 1))
+  (push pointer jumplist--list))
 
-(defun jumplist/same-position? (pointer)
+(defun jumplist--same-position? (pointer)
   (let ((new-point (cdr pointer))
-        (top-point (cdar jumplist/list)))
+        (top-point (cdar jumplist--list)))
     (cond ((not new-point) nil)
           ((not top-point) nil)
           ((eq (marker-position new-point) (marker-position top-point)) 't))))
 
-(defun jumplist/set ()
+(defun jumplist--set ()
   "The record data structure is (file-name . pointer)."
   (interactive)
   (if (buffer-file-name)
       (let ((pointer (cons (buffer-file-name) (point-marker))))
-        (unless (jumplist/same-position? pointer)
-          (when jumplist/jumping
-            (jumplist/drop! jumplist/idx)
-            (setq jumplist/jumping nil)
-            (jumplist/reset-idx))
-          (unless (jumplist/same-position? pointer)
-            (jumplist/push pointer))))))
+        (unless (jumplist--same-position? pointer)
+          (when jumplist--jumping
+            (jumplist--drop! jumplist--idx)
+            (setq jumplist--jumping nil)
+            (jumplist--reset-idx))
+          (unless (jumplist--same-position? pointer)
+            (jumplist--push pointer))))))
 
-(defun jumplist/do-command? (command do-hook-command-list)
+(defun jumplist--do-command? (command do-hook-command-list)
   (if do-hook-command-list
       (or
        (eq command (car do-hook-command-list))
-       (jumplist/do-command? command (cdr do-hook-command-list)))))
+       (jumplist--do-command? command (cdr do-hook-command-list)))))
 
 (defun jumplist--commad-hook ()
-  "Pre commad hook that call `jumplist/set' when registerd command hook called."
+  "Pre commad hook that call `jumplist--set' when registerd command hook called."
   (cond
-   ((jumplist/do-command? this-command jumplist/hook-commad-list) (jumplist/set))
-   ((and jumplist/jumping               ; when jump and move
-         (not (eq this-command 'jumplist/previous-jump))
-         (not (eq this-command 'jumplist/forward-jump)))
-    (jumplist/set))))
+   ((jumplist--do-command? this-command jumplist--hook-commad-list) (jumplist--set))
+   ((and jumplist--jumping               ; when jump and move
+         (not (eq this-command 'jumplist--previous-jump))
+         (not (eq this-command 'jumplist--forward-jump)))
+    (jumplist--set))))
 (add-hook 'pre-command-hook 'jumplist--commad-hook)
 
 ;;;###autoload
-(defun jumplist/previous-jump ()
+(defun jumplist--previous-jump ()
   "Jump back."
   (interactive)
-  (if (or (not jumplist/list)
-          (and (not (jumplist/first?))
-               (jumplist/last?)))
+  (if (or (not jumplist--list)
+          (and (not (jumplist--first?))
+               (jumplist--last?)))
       (message "No further undo point.")
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/inc-idx)
-    (let ((buff (nth jumplist/idx jumplist/list)))
-      (jumplist/do-jump buff))))
+    (unless jumplist--jumping
+      (jumplist--set)
+      (setq jumplist--jumping 't))
+    (jumplist--inc-idx)
+    (let ((buff (nth jumplist--idx jumplist--list)))
+      (jumplist--do-jump buff))))
 
 ;;;###autoload
-(defun jumplist/forward-jump ()
+(defun jumplist--forward-jump ()
   "Jump forward."
   (interactive)
-  (if (or (not jumplist/list)
-          (jumplist/first?))
+  (if (or (not jumplist--list)
+          (jumplist--first?))
       (message "No further redo point.")
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/dec-idx)
-    (let ((buff (nth jumplist/idx jumplist/list)))
-      (jumplist/do-jump buff))))
+    (unless jumplist--jumping
+      (jumplist--set)
+      (setq jumplist--jumping 't))
+    (jumplist--dec-idx)
+    (let ((buff (nth jumplist--idx jumplist--list)))
+      (jumplist--do-jump buff))))
 
 (provide 'jumplist)
 ;;; jumplist.el ends here
