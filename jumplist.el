@@ -39,8 +39,8 @@
   :type 'integer
   :group 'jumplist)
 
-(defcustom jumplist/ignored-file-patterns '("COMMIT_EDITMSG$" "TAGS$")
-  "Ignore file patter."
+(defcustom jumplist/hook-commad-list '()
+  "Max length of jumplist."
   :type 'list
   :group 'jumplist)
 
@@ -78,31 +78,8 @@
   "Increment `jumplist/idx'."
   (setq jumplist/idx (+ jumplist/idx 1)))
 
-(defun jumplist/prev-jump ()
-  "Jump."
-  (interactive)
-  (if (jumplist/last?)
-      (message "last.")
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/inc-idx)
-    (let ((buff (nth jumplist/idx jumplist/list)))
-      (jumplist/do-jump buff))))
-
-(defun jumplist/next-jump ()
-  "Jump."
-  (interactive)
-  (if (jumplist/first?)
-      (message "first.")
-    (unless jumplist/jumping
-      (jumplist/set)
-      (setq jumplist/jumping 't))
-    (jumplist/dec-idx)
-    (let ((buff (nth jumplist/idx jumplist/list)))
-      (jumplist/do-jump buff))))
-
 (defun jumplist/drop! (idx)
+  "Drop item form list of IDX."
   (nbutlast jumplist/list jumplist/idx))
 
 (defun jumplist/push (pointer)
@@ -114,21 +91,51 @@
 (defun jumplist/set ()
   "The record data structure is (file-name . pointer)."
   (interactive)
-  (let ((pointer (cons (buffer-file-name) (point-marker))))
-    (when jumplist/jumping
-      (jumplist/drop! jumplist/idx)
-      (setq jumplist/jumping nil)
-      (jumplist/reset-idx))
-    (jumplist/push pointer)))
+  (if (buffer-file-name)
+      (let ((pointer (cons (buffer-file-name) (point-marker))))
+        (when jumplist/jumping
+          (jumplist/drop! jumplist/idx)
+          (setq jumplist/jumping nil)
+          (jumplist/reset-idx))
+        (jumplist/push pointer))))
+
+(defun jumplist/do-command? (command blacklist)
+  (if blacklist
+      (or
+       (eq command (car blacklist))
+       (jumplist/do-command? command (cdr blacklist)))))
+
+(defun jumplist/commad-hook ()
+  "Pre commad hook that call `jumplist/set' when registerd command hook called."
+  (if (jumplist/do-command? this-command jumplist/hook-commad-list)
+      (jumplist/set)))
+(add-hook 'pre-command-hook 'jumplist/commad-hook)
+
+;;;###autoload
+(defun jumplist/previous-jump ()
+  "Jump back."
+  (interactive)
+  (if (jumplist/last?)
+      (message "No further undo point.")
+    (unless jumplist/jumping
+      (jumplist/set)
+      (setq jumplist/jumping 't))
+    (jumplist/inc-idx)
+    (let ((buff (nth jumplist/idx jumplist/list)))
+      (jumplist/do-jump buff))))
+
+;;;###autoload
+(defun jumplist/forward-jump ()
+  "Jump forward."
+  (interactive)
+  (if (jumplist/first?)
+      (message "No further redo point.")
+    (unless jumplist/jumping
+      (jumplist/set)
+      (setq jumplist/jumping 't))
+    (jumplist/dec-idx)
+    (let ((buff (nth jumplist/idx jumplist/list)))
+      (jumplist/do-jump buff))))
 
 (provide 'jumplist)
 ;;; jumplist.el ends here
-
-(global-set-key (kbd "s-j") 'jumplist/set)
-(global-set-key (kbd "s-g") 'jumplist/prev-jump)
-(global-set-key (kbd "s-G") 'jumplist/next-jump)
-
-(progn
-  (setq jumplist/jumping nil)
-  (jumplist/reset-idx)
-  (setq jumplist/list '()))
