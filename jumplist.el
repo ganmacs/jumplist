@@ -123,8 +123,9 @@
 (defun jumplist/previous-jump ()
   "Jump back."
   (interactive)
-  (if (and (not (jumplist/first?))
-           (jumplist/last?))
+  (if (or (not jumplist/list)
+          (and (not (jumplist/first?))
+               (jumplist/last?)))
       (message "No further undo point.")
     (unless jumplist/jumping
       (jumplist/set)
@@ -137,7 +138,8 @@
 (defun jumplist/forward-jump ()
   "Jump forward."
   (interactive)
-  (if (jumplist/first?)
+  (if (or (not jumplist/list)
+          (jumplist/first?))
       (message "No further redo point.")
     (unless jumplist/jumping
       (jumplist/set)
