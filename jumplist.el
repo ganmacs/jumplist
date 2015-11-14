@@ -107,11 +107,11 @@
             (jumplist/reset-idx))
           (jumplist/push pointer)))))
 
-(defun jumplist/do-command? (command blacklist)
-  (if blacklist
+(defun jumplist/do-command? (command do-hook-command-list)
+  (if do-hook-command-list
       (or
-       (eq command (car blacklist))
-       (jumplist/do-command? command (cdr blacklist)))))
+       (eq command (car do-hook-command-list))
+       (jumplist/do-command? command (cdr do-hook-command-list)))))
 
 (defun jumplist/commad-hook ()
   "Pre commad hook that call `jumplist/set' when registerd command hook called."
