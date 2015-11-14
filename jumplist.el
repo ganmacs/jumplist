@@ -33,7 +33,7 @@
 (defgroup jumplist nil
   "jumplist configuration options."
   :prefix "jumplist"
-  :group 'jumplist)
+  :group 'convenience)
 
 (defcustom jumplist--max-length 100
   "Max length of jumplist."
