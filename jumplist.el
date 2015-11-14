@@ -6,6 +6,7 @@
 ;; Maintainer: ganmacs <ganmacs_at_gmail.com>
 ;; URL: https://github.com/ganmacs/jumplist
 ;; Version: 0.0.1
+;; Package-Requires: ((cl-lib "0.5"))
 ;; Keywords: jumplist vim
 
 ;; This file is NOT part of GNU Emacs.
