@@ -101,7 +101,6 @@
   (if (buffer-file-name)
       (let ((pointer (cons (buffer-file-name) (point-marker))))
         (unless (jumplist/same-position? pointer)
-          (message "hogehgoe")
           (when jumplist/jumping
             (jumplist/drop! jumplist/idx)
             (setq jumplist/jumping nil)
@@ -124,7 +123,8 @@
 (defun jumplist/previous-jump ()
   "Jump back."
   (interactive)
-  (if (jumplist/last?)
+  (if (and (not (jumplist/first?))
+           (jumplist/last?))
       (message "No further undo point.")
     (unless jumplist/jumping
       (jumplist/set)
