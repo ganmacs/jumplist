@@ -80,7 +80,7 @@
 
 (defun jumplist/drop! (idx)
   "Drop item form list of IDX."
-  (nbutlast jumplist/list jumplist/idx))
+  (setq jumplist/list (nthcdr jumplist/idx jumplist/list)))
 
 (defun jumplist/push (pointer)
   "Push POINTER to `jumplist'."
