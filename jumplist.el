@@ -6,6 +6,7 @@
 ;; Maintainer: ganmacs <ganmacs_at_gmail.com>
 ;; URL: https://github.com/ganmacs/jumplist
 ;; Version: 0.0.1
+;; Package-Requires: ((cl-lib "0.5"))
 ;; Keywords: jumplist vim
 
 ;; This file is NOT part of GNU Emacs.
@@ -32,15 +33,15 @@
 (defgroup jumplist nil
   "jumplist configuration options."
   :prefix "jumplist"
-  :group 'jumplist)
+  :group 'convenience)
 
-(defcustom jumplist--max-length 100
+(defcustom jumplist-max-length 100
   "Max length of jumplist."
   :type 'integer
   :group 'jumplist)
 
-(defcustom jumplist--hook-commad-list '(end-of-buffer beginning-of-buffer find-file)
-  "Max length of jumplist."
+(defcustom jumplist-hook-command-list '(end-of-buffer beginning-of-buffer find-file)
+  "Commands to hook."
   :type 'list
   :group 'jumplist)
 
@@ -84,7 +85,7 @@
 
 (defun jumplist--push (pointer)
   "Push POINTER to `jumplist'."
-  (while (> (length jumplist--list) jumplist--max-length)
+  (while (> (length jumplist--list) jumplist-max-length)
     (nbutlast jumplist--list 1))
   (push pointer jumplist--list))
 
@@ -114,18 +115,17 @@
        (eq command (car do-hook-command-list))
        (jumplist--do-command? command (cdr do-hook-command-list)))))
 
-(defun jumplist--commad-hook ()
-  "Pre commad hook that call `jumplist--set' when registerd command hook called."
+(defun jumplist--command-hook ()
+  "Pre command hook that call `jumplist--set' when registerd command hook called."
   (cond
-   ((jumplist--do-command? this-command jumplist--hook-commad-list) (jumplist--set))
+   ((jumplist--do-command? this-command jumplist-hook-command-list) (jumplist--set))
    ((and jumplist--jumping               ; when jump and move
-         (not (eq this-command 'jumplist--previous-jump))
-         (not (eq this-command 'jumplist--forward-jump)))
+         (not (memq this-command '(jumplist-previous jumplist-next))))
     (jumplist--set))))
-(add-hook 'pre-command-hook 'jumplist--commad-hook)
+(add-hook 'pre-command-hook 'jumplist--command-hook)
 
 ;;;###autoload
-(defun jumplist--previous-jump ()
+(defun jumplist-previous ()
   "Jump back."
   (interactive)
   (if (or (not jumplist--list)
@@ -140,7 +140,7 @@
       (jumplist--do-jump buff))))
 
 ;;;###autoload
-(defun jumplist--forward-jump ()
+(defun jumplist-next ()
   "Jump forward."
   (interactive)
   (if (or (not jumplist--list)
