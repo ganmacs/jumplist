@@ -1,12 +1,14 @@
-# jumplist.el
+# jumplist.el ![melpa badge][melpa-badge]
 
 jumplist.el is Emacs port of jumplist(`Ctrl-O`) in vim.
 
-# Requirements
+## Requirements
 
 Emacs 24.3 or higher.
 
-# Installation
+## Installation
+
+You can install jumplist.el from [MELPA](https://melpa.org/#/jumplist) with package.el.
 
 install directly:
 
@@ -33,3 +35,5 @@ After Installation add following to your configuration file(~/.emacs.d/init.el, 
      isearch-forward end-of-buffer beginning-of-buffer
      find-file)))
 ```
+
+[melpa-badge]: https://melpa.org/packages/jumplist-badge.svg
