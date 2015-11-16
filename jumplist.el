@@ -40,7 +40,7 @@
   :type 'integer
   :group 'jumplist)
 
-(defcustom jumplist-hook-command-list '(end-of-buffer beginning-of-buffer find-file)
+(defcustom jumplist-hook-commands '(end-of-buffer beginning-of-buffer find-file)
   "Commands to hook."
   :type 'list
   :group 'jumplist)
