@@ -118,7 +118,7 @@
 (defun jumplist--command-hook ()
   "Pre command hook that call `jumplist--set' when registerd command hook called."
   (cond
-   ((jumplist--do-command? this-command jumplist-hook-command-list) (jumplist--set))
+   ((jumplist--do-command? this-command jumplist-hook-commands) (jumplist--set))
    ((and jumplist--jumping               ; when jump and move
          (not (memq this-command '(jumplist-previous jumplist-next))))
     (jumplist--set))))
