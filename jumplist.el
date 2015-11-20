@@ -5,7 +5,7 @@
 ;; Author: ganmacs <ganmacs_at_gmail.com>
 ;; Maintainer: ganmacs <ganmacs_at_gmail.com>
 ;; URL: https://github.com/ganmacs/jumplist
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Package-Requires: ((cl-lib "0.5"))
 ;; Keywords: jumplist vim
 
