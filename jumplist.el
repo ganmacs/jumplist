@@ -1,4 +1,4 @@
-;;; jumplist.el --- Jump like vim jumplist
+;;; jumplist.el --- Jump like vim jumplist or ex jumplist
 
 ;; Copyright (C) 2015 ganmacs
 
@@ -26,6 +26,7 @@
 
 ;;; Commentary:
 
+
 ;;; Code:
 
 (require 'cl-lib)
@@ -38,6 +39,11 @@
 (defcustom jumplist-max-length 100
   "Max length of jumplist."
   :type 'integer
+  :group 'jumplist)
+
+(defcustom jumplist-ex-mode 'nil
+  "Original vim like jumplist or not."
+  :type 'boolean
   :group 'jumplist)
 
 (defcustom jumplist-hook-commands '(end-of-buffer beginning-of-buffer find-file)
@@ -102,7 +108,7 @@
   (if (buffer-file-name)
       (let ((pointer (cons (buffer-file-name) (point-marker))))
         (unless (jumplist--same-position? pointer)
-          (when jumplist--jumping
+          (when (and jumplist-ex-mode jumplist--jumping)
             (jumplist--drop! jumplist--idx)
             (setq jumplist--jumping nil)
             (jumplist--reset-idx))
@@ -132,9 +138,10 @@
           (and (not (jumplist--first?))
                (jumplist--last?)))
       (message "No further undo point.")
-    (unless jumplist--jumping
-      (jumplist--set)
-      (setq jumplist--jumping 't))
+    (if jumplist-ex-mode
+        (unless jumplist--jumping
+          (jumplist--set)
+          (setq jumplist--jumping 't)))
     (jumplist--inc-idx)
     (let ((buff (nth jumplist--idx jumplist--list)))
       (jumplist--do-jump buff))))
@@ -146,9 +153,10 @@
   (if (or (not jumplist--list)
           (jumplist--first?))
       (message "No further redo point.")
-    (unless jumplist--jumping
-      (jumplist--set)
-      (setq jumplist--jumping 't))
+    (if jumplist-ex-mode
+        (unless jumplist--jumping
+          (jumplist--set)
+          (setq jumplist--jumping 't)))
     (jumplist--dec-idx)
     (let ((buff (nth jumplist--idx jumplist--list)))
       (jumplist--do-jump buff))))
